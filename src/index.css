@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@300..700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Quicksand", sans-serif;
+  
+  --color-sage-light: #f1f3ee;
+  --color-sage: #a3b18a;
+  --color-sage-dark: #588157;
+  --color-cream: #fdfaf5;
+  --color-brown-light: #b08968;
+  --color-brown: #7f5539;
+  --color-brown-dark: #432818;
+}
+
+@layer base {
+  body {
+    @apply bg-cream font-sans text-brown-dark overflow-x-hidden;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(-10%); }
+  to { transform: translateX(110%); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.cloud {
+  @apply absolute opacity-20 pointer-events-none;
+  animation: cloud-drift 60s linear infinite;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
