@@ -38,17 +38,17 @@ export default function About() {
 
         gsap.fromTo(
           wordSpans,
-          { opacity: 0.15, color: '#a1a1aa' },
+          { opacity: 0.22, color: '#9ca3af' },
           {
             opacity: 1,
             color: '#ffffff',
-            stagger: 0.03,
+            stagger: 0.02,
             ease: 'power1.out',
             scrollTrigger: {
               trigger: textRef.current,
-              start: 'top 75%',
-              end: 'bottom 35%',
-              scrub: 0.8,
+              start: 'top 80%',
+              end: 'bottom 55%',
+              scrub: 0.6,
             },
           }
         );
