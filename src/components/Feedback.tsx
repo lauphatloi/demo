@@ -3,16 +3,15 @@
  *
  * GSAP Animation 7 — Horizontal Scroll (Pinned):
  *   On desktop (>=768px): The section is pinned and feedback cards translate
- *   horizontally in sync with vertical scroll (scrub). The track wrapper has
- *   overflow-hidden to prevent any native horizontal scrollbar.
- *   On mobile: Standard CSS snap-scroll for accessible touch swiping.
- *   Features real client photos uploaded by the user.
+ *   horizontally in sync with vertical scroll (scrub).
+ *   Features real client photos uploaded by the user from public folder.
  */
 
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { Star } from 'lucide-react';
+import { getAssetUrl } from '../utils/asset';
 
 const REVIEWS = [
   {
@@ -20,7 +19,7 @@ const REVIEWS = [
     role: 'Khách hàng thân thiết (3 năm)',
     text: 'Tôi đã làm mi ở L\'Thanh từ những ngày đầu. Mi nối cực kỳ êm, không cộm, không rụng mi thật và giữ được hơn 1 tháng. Không gian salon rất thơm và thư giãn.',
     stars: 5,
-    image: '/1787143984351_3902196190291302019_3902196190291302019_a10e0b3b657de375defa0db879b59e5a.jpg',
+    image: '1787143984351_3902196190291302019_3902196190291302019_a10e0b3b657de375defa0db879b59e5a.jpg',
     style: 'Style Anime',
   },
   {
@@ -28,7 +27,7 @@ const REVIEWS = [
     role: 'Người mẫu ảnh / Content Creator',
     text: 'Style Mi Foxy ở đây làm mình cực kỳ ưng ý! Lên hình mắt sâu và quyến rũ hẳn. Chuyên viên rất tỉ mỉ và tư vấn nhiệt tình đúng dáng mắt của mình.',
     stars: 5,
-    image: '/1787143984360_3902196190291302019_3902196190291302019_6ea59bed9fbb15ea38b783529f122f8d.jpg',
+    image: '1787143984360_3902196190291302019_3902196190291302019_6ea59bed9fbb15ea38b783529f122f8d.jpg',
     style: 'Mi Foxy',
   },
   {
@@ -36,7 +35,7 @@ const REVIEWS = [
     role: 'Cựu học viên Masterclass K12',
     text: 'Khóa học tại L\'Thanh đã thay đổi hoàn toàn sự nghiệp của mình. Sau khi tốt nghiệp, mình đã tự tin mở studio riêng và có lượng khách ổn định. Cảm ơn cô Thanh rất nhiều!',
     stars: 5,
-    image: '/1787143984369_3902196190291302019_3902196190291302019_957eaf719c315040699bb5d68f374ee1.jpg',
+    image: '1787143984369_3902196190291302019_3902196190291302019_957eaf719c315040699bb5d68f374ee1.jpg',
     style: 'Khóa Masterclass',
   },
   {
@@ -44,7 +43,7 @@ const REVIEWS = [
     role: 'Khách hàng VIP',
     text: 'Hoa Hồng Mix là kiểu mi chân ái của mình. Nhẹ như không nối, rửa mặt êm ru không lo rụng sớm. Sản phẩm keo nối cao cấp không hề bị cay hay đỏ mắt.',
     stars: 5,
-    image: '/1787143984378_3902196190291302019_3902196190291302019_39320e466702748f39f476239d1c50fc.jpg',
+    image: '1787143984378_3902196190291302019_3902196190291302019_39320e466702748f39f476239d1c50fc.jpg',
     style: 'Hoa Hồng Mix',
   },
   {
@@ -52,7 +51,7 @@ const REVIEWS = [
     role: 'Khách hàng',
     text: 'Dịch vụ 5 sao từ khâu đón tiếp đến lúc ra về. Mỗi lần ghé L\'Thanh là một lần được thư giãn trọn vẹn, thức dậy là có ngay đôi mắt xinh đẹp rạng ngời.',
     stars: 5,
-    image: '/1787143984386_3902196190291302019_3902196190291302019_672f240be7656c4e33b5c258d7c81a00.jpg',
+    image: '1787143984386_3902196190291302019_3902196190291302019_672f240be7656c4e33b5c258d7c81a00.jpg',
     style: 'Mi Thiết Kế',
   },
 ];
@@ -162,7 +161,7 @@ export default function Feedback() {
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#D4AF37]/60 flex-shrink-0 shadow-md">
                       <img
-                        src={review.image}
+                        src={getAssetUrl(review.image)}
                         alt={review.name}
                         className="w-full h-full object-cover"
                       />

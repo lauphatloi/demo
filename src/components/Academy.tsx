@@ -13,6 +13,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { CheckCircle2, GraduationCap, Users, Award } from 'lucide-react';
+import { getAssetUrl } from '../utils/asset';
 
 const PROGRAMS = [
   {
@@ -128,7 +129,7 @@ export default function Academy() {
             {/* Main image (User uploaded academy training image) */}
             <div className="relative rounded-2xl overflow-hidden aspect-[4/5] w-full shiny-hover border border-[#D4AF37]/30 shadow-2xl">
               <img
-                src="/1787143984468_3902196190291302019_3902196190291302019_63be7f28c67331798a3edb73b769b102.jpg"
+                src={getAssetUrl('1787143984468_3902196190291302019_3902196190291302019_63be7f28c67331798a3edb73b769b102.jpg')}
                 alt="L'Thanh Academy Training Session"
                 className="w-full h-full object-cover"
               />

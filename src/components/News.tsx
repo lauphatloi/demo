@@ -4,19 +4,20 @@
  * GSAP Animation 8 — Fade-Up Stagger:
  *   Clean, professional stagger fade-up animation for article cards
  *   as they enter the viewport.
- *   Uses uploaded real salon beauty tips and portfolio images.
+ *   Uses uploaded real salon beauty tips and portfolio images from public folder.
  */
 
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ArrowRight, Calendar, Tag } from 'lucide-react';
+import { getAssetUrl } from '../utils/asset';
 
 const FEATURED = {
   title: 'Học Viện L\'Thanh: Hành Trình Từ Học Viên Đến Làm Chủ Studio Nối Mi',
   date: 'Tháng 8, 2024',
   category: 'Câu chuyện thành công',
-  image: '/1787143984422_3902196190291302019_3902196190291302019_cc959470fa75592c78a1d22b7fec483b.jpg',
+  image: '1787143984422_3902196190291302019_3902196190291302019_cc959470fa75592c78a1d22b7fec483b.jpg',
   excerpt: 'Khám phá câu chuyện truyền cảm hứng của các học viên tốt nghiệp L\'Thanh Academy — những người đã biến đam mê nghệ thuật nối mi thành sự nghiệp kinh doanh vững chắc.',
 };
 
@@ -26,7 +27,7 @@ const NEWS = [
     date: '15 Tháng 7, 2024',
     category: 'Cẩm nang chăm sóc',
     readTime: '4 phút đọc',
-    image: '/1787143984394_3902196190291302019_3902196190291302019_76fb77e796628d040d705ff2cccf33fd.jpg',
+    image: '1787143984394_3902196190291302019_3902196190291302019_76fb77e796628d040d705ff2cccf33fd.jpg',
     excerpt: 'Những thói quen rửa mặt, dưỡng mi và chải mi đúng cách hàng ngày giúp hàng mi nối của bạn luôn tơi đều, mượt mà và bền đẹp nhất.',
   },
   {
@@ -34,7 +35,7 @@ const NEWS = [
     date: '02 Tháng 6, 2024',
     category: 'Xu hướng làm đẹp',
     readTime: '5 phút đọc',
-    image: '/1787143984408_3902196190291302019_3902196190291302019_a75c3915e743a65ec712f63af246fb31.jpg',
+    image: '1787143984408_3902196190291302019_3902196190291302019_a75c3915e743a65ec712f63af246fb31.jpg',
     excerpt: 'Từ style Mi Foxy quyến rũ, Anime cá tính đến Hoa Hồng Mix lãng mạn — cùng L\'Thanh cập nhật những phong cách mi đang dẫn đầu xu thế.',
   },
   {
@@ -42,7 +43,7 @@ const NEWS = [
     date: '19 Tháng 5, 2024',
     category: 'Tư vấn chuyên gia',
     readTime: '6 phút đọc',
-    image: '/1787143984417_3902196190291302019_3902196190291302019_02144224414435de2aa33b587dca8e94.jpg',
+    image: '1787143984417_3902196190291302019_3902196190291302019_02144224414435de2aa33b587dca8e94.jpg',
     excerpt: 'Mắt một mí, mắt mí lót, mắt tròn hay mắt sâu nên nối kiểu mi nào? Hướng dẫn chi tiết từ chuyên gia nối mi tại L\'Thanh.',
   },
 ];
@@ -132,7 +133,7 @@ export default function News() {
         <div className="news-featured mb-10 group cursor-pointer">
           <div className="relative rounded-2xl overflow-hidden aspect-[21/9] shiny-hover border border-white/10 shadow-2xl">
             <img
-              src={FEATURED.image}
+              src={getAssetUrl(FEATURED.image)}
               alt={FEATURED.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -167,7 +168,7 @@ export default function News() {
                 {/* Image */}
                 <div className="relative overflow-hidden rounded-xl aspect-[16/10] mb-5 shiny-hover border border-white/5">
                   <img
-                    src={article.image}
+                    src={getAssetUrl(article.image)}
                     alt={article.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
                     loading="lazy"

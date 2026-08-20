@@ -6,16 +6,13 @@
  *   content. As the user scrolls to the very end of the page, the main
  *   section's margin-bottom creates the visual that the footer is being
  *   "uncovered" — like lifting a card off a table.
- *
- *   No GSAP ScrollTrigger is needed for the layout uncover; it is achieved purely
- *   through CSS stacking (fixed + lower z-index + margin-bottom on main).
- *   GSAP is used for a content fade-up inside the footer as it becomes visible.
  */
 
 import React, { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { getAssetUrl } from '../utils/asset';
 
 export default function Footer() {
   const footerRef = useRef<HTMLElement>(null);
@@ -45,11 +42,6 @@ export default function Footer() {
   }, []);
 
   return (
-    /*
-     * fixed + bottom-0 + z-[-1]:
-     *   Places the footer behind all other content.
-     *   The main section's margin-bottom in App.tsx reveals the footer at page-end.
-     */
     <footer
       ref={footerRef}
       className="fixed bottom-0 left-0 w-full bg-[#000000] border-t border-white/[0.06]"
@@ -66,11 +58,11 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-6">
               <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4AF37]/50 flex-shrink-0">
                 <img
-                  src="/logo.jpg"
+                  src={getAssetUrl('logo.jpg')}
                   alt="L'THANH Logo"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/logo.svg';
+                    (e.target as HTMLImageElement).src = getAssetUrl('logo.svg');
                   }}
                 />
               </div>
@@ -78,12 +70,12 @@ export default function Footer() {
                 <h3 className="font-serif text-white text-lg font-semibold leading-tight">
                   L'Thanh
                 </h3>
-                <p className="font-sans text-[#D4AF37] text-[9px] tracking-[0.25em] uppercase">
+                <p className="font-sans text-[#D4AF37] text-[9px] tracking-[0.25em] uppercase font-medium">
                   Eyelash &amp; Beauty
                 </p>
               </div>
             </div>
-            <p className="font-sans text-zinc-500 text-xs font-light leading-relaxed max-w-[220px]">
+            <p className="font-sans text-zinc-400 text-xs font-light leading-relaxed max-w-[220px]">
               Nơi vẻ đẹp tự nhiên của bạn được nâng tầm qua đôi bàn tay của các nghệ nhân hàng đầu.
             </p>
 
@@ -126,7 +118,7 @@ export default function Footer() {
 
           {/* ── Contact Column ── */}
           <div className="footer-col">
-            <h5 className="font-sans text-[#D4AF37] text-[9px] tracking-[0.3em] uppercase mb-5">
+            <h5 className="font-sans text-[#D4AF37] text-[9px] tracking-[0.3em] uppercase mb-5 font-semibold">
               Liên hệ
             </h5>
             <ul className="space-y-4">
@@ -153,14 +145,14 @@ export default function Footer() {
 
           {/* ── Working Hours Column ── */}
           <div className="footer-col">
-            <h5 className="font-sans text-[#D4AF37] text-[9px] tracking-[0.3em] uppercase mb-5">
+            <h5 className="font-sans text-[#D4AF37] text-[9px] tracking-[0.3em] uppercase mb-5 font-semibold">
               Giờ mở cửa
             </h5>
             <ul className="space-y-3">
               <li>
                 <div className="flex items-center gap-2 mb-1">
                   <Clock size={11} className="text-[#D4AF37]" strokeWidth={1.5} />
-                  <span className="font-sans text-zinc-300 text-[10px] uppercase tracking-wider">
+                  <span className="font-sans text-zinc-300 text-[10px] uppercase tracking-wider font-medium">
                     Thứ 2 — Thứ 6
                   </span>
                 </div>
@@ -169,14 +161,14 @@ export default function Footer() {
               <li>
                 <div className="flex items-center gap-2 mb-1">
                   <Clock size={11} className="text-[#D4AF37]" strokeWidth={1.5} />
-                  <span className="font-sans text-zinc-300 text-[10px] uppercase tracking-wider">
+                  <span className="font-sans text-zinc-300 text-[10px] uppercase tracking-wider font-medium">
                     Thứ 7 — Chủ nhật
                   </span>
                 </div>
                 <p className="font-sans text-zinc-400 text-xs pl-5">09:00 – 20:00</p>
               </li>
               <li className="pt-2">
-                <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[#D4AF37] font-sans text-[9px] tracking-wider uppercase px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[#D4AF37] font-sans text-[9px] tracking-wider uppercase px-3 py-1 rounded-full font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
                   Đang mở cửa
                 </span>
@@ -186,21 +178,22 @@ export default function Footer() {
 
           {/* ── Links Column ── */}
           <div className="footer-col">
-            <h5 className="font-sans text-[#D4AF37] text-[9px] tracking-[0.3em] uppercase mb-5">
+            <h5 className="font-sans text-[#D4AF37] text-[9px] tracking-[0.3em] uppercase mb-5 font-semibold">
               Khám phá
             </h5>
             <ul className="space-y-3">
               {[
+                ['Giới thiệu', '#about'],
                 ['Dịch vụ', '#services'],
-                ['Academy', '#academy'],
-                ['Phản hồi', '#feedback'],
-                ['Tin tức', '#news'],
+                ['Đào tạo', '#academy'],
+                ['Đánh giá', '#feedback'],
+                ['Cẩm nang', '#news'],
                 ['Đặt lịch', '#booking'],
               ].map(([label, href]) => (
                 <li key={href}>
                   <button
                     onClick={() => document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })}
-                    className="font-sans text-zinc-500 text-xs hover:text-[#D4AF37] transition-colors duration-300"
+                    className="font-sans text-zinc-400 text-xs hover:text-[#D4AF37] transition-colors duration-300"
                   >
                     {label}
                   </button>
@@ -215,12 +208,12 @@ export default function Footer() {
       {/* ── Bottom bar ── */}
       <div className="border-t border-white/[0.05] py-5">
         <div className="max-w-7xl mx-auto px-5 md:px-12 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="font-sans text-zinc-600 text-[10px]">
+          <p className="font-sans text-zinc-500 text-[10px]">
             © {new Date().getFullYear()} L'Thanh Eyelash &amp; Beauty. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             {['Chính sách bảo mật', 'Điều khoản sử dụng'].map((link) => (
-              <a key={link} href="#" className="font-sans text-zinc-700 text-[10px] hover:text-zinc-400 transition-colors duration-300">
+              <a key={link} href="#" className="font-sans text-zinc-600 text-[10px] hover:text-zinc-400 transition-colors duration-300">
                 {link}
               </a>
             ))}

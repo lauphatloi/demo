@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-gold-light: #FFDF73;
+  --color-gold-default: #D4AF37;
+  --color-gold-dark: #AA7700;
+
+  --font-serif: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Montserrat", "Be Vietnam Pro", sans-serif;
+}
 
 /* =====================================================
    GLOBAL RESET & SCROLLBAR HIDING (MOBILE & DESKTOP)

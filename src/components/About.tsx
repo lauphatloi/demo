@@ -3,13 +3,13 @@
  *
  * GSAP Animation 3 — Word-by-Word Text Reveal (scrub):
  *   Splits the philosophy paragraph into individual <span> words.
- *   Each word's opacity is driven directly by scroll position (scrub: true),
- *   creating a "reading light" scrollytelling effect without causing font glitches.
+ *   Each word's opacity is driven directly by scroll position (scrub: true).
  */
 
 import React, { useRef, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { getAssetUrl } from '../utils/asset';
 
 export default function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -162,7 +162,7 @@ export default function About() {
         <div ref={galleryRef} className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
           <div className="relative rounded-2xl overflow-hidden aspect-[4/3] shiny-hover border border-white/10 group">
             <img
-              src="/1787143984428_3902196190291302019_3902196190291302019_dac331b6eb40cc497a44815491ba5f02.jpg"
+              src={getAssetUrl('1787143984428_3902196190291302019_3902196190291302019_dac331b6eb40cc497a44815491ba5f02.jpg')}
               alt="L'Thanh Eyelash Studio"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -175,7 +175,7 @@ export default function About() {
 
           <div className="relative rounded-2xl overflow-hidden aspect-[4/3] shiny-hover border border-white/10 group">
             <img
-              src="/1787143984437_3902196190291302019_3902196190291302019_9fe3d5ea6ce44a1c12676efd82a3e902.jpg"
+              src={getAssetUrl('1787143984437_3902196190291302019_3902196190291302019_9fe3d5ea6ce44a1c12676efd82a3e902.jpg')}
               alt="Nghệ Nhân L'Thanh Eyelash"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />

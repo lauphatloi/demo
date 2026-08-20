@@ -4,54 +4,55 @@
  * GSAP Animation 4 — Staggered 3D Rotate In:
  *   Cards enter with rotationY: 50 + y offset, rotating to flat on scroll.
  *   "Shiny Hover" CSS class applied to each card's image wrapper.
- *   Utilizes real uploaded eyelash style photos.
+ *   Utilizes real uploaded eyelash style photos from public folder.
  */
 
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ArrowRight } from 'lucide-react';
+import { getAssetUrl } from '../utils/asset';
 
 const SERVICES = [
   {
     title: 'Style Anime',
     subtitle: 'Phong cách hoạt hình',
-    image: '/1787143984248_3902196190291302019_3902196190291302019_c45839e0c2940fe46ad47dcf39abb4c4.jpg',
+    image: '1787143984248_3902196190291302019_3902196190291302019_c45839e0c2940fe46ad47dcf39abb4c4.jpg',
     desc: 'Đường mi sắc nét, cá tính với các spike độc đáo tạo điểm nhấn ấn tượng, to tròn cho đôi mắt.',
     tag: 'Bestseller',
   },
   {
     title: 'Hoa Hồng Mix',
     subtitle: 'Romantic Rose Volume',
-    image: '/1787143984275_3902196190291302019_3902196190291302019_4c6cf7f7d8a1f977f3fdf98faf50f0bc.jpg',
+    image: '1787143984275_3902196190291302019_3902196190291302019_4c6cf7f7d8a1f977f3fdf98faf50f0bc.jpg',
     desc: 'Độ dày bồng bềnh như cánh hoa hồng, tạo nét đẹp dịu dàng, lãng mạn và vô cùng tự nhiên.',
     tag: 'Được yêu thích',
   },
   {
     title: 'Mi Foxy',
     subtitle: 'Hiệu ứng mắt mèo',
-    image: '/1787143984297_3902196190291302019_3902196190291302019_1474b017fbc6ea8804dfea4c49aa7027.jpg',
+    image: '1787143984297_3902196190291302019_3902196190291302019_1474b017fbc6ea8804dfea4c49aa7027.jpg',
     desc: 'Kéo dài và nâng cong vút phần đuôi mắt, mang đến ánh nhìn sắc sảo, quyến rũ và đầy quyền lực.',
     tag: 'Xu hướng 2024',
   },
   {
     title: 'Mi Thiết Kế',
     subtitle: 'Custom Bespoke Design',
-    image: '/1787143984314_3902196190291302019_3902196190291302019_4363cc34534dd7f4da527c498b456fb8.jpg',
+    image: '1787143984314_3902196190291302019_3902196190291302019_4363cc34534dd7f4da527c498b456fb8.jpg',
     desc: 'Được thiết kế độc bản theo dáng mắt, phong cách và sở thích riêng của từng khách hàng.',
     tag: 'Cao cấp',
   },
   {
     title: 'Mi Classic',
     subtitle: 'Vẻ đẹp thanh lịch',
-    image: '/1787143984330_3902196190291302019_3902196190291302019_5811329574e3525fb779ac50d98d860f.jpg',
+    image: '1787143984330_3902196190291302019_3902196190291302019_5811329574e3525fb779ac50d98d860f.jpg',
     desc: 'Từng sợi mi tự nhiên được dặm kỹ lưỡng, giữ trọn nét thanh tao, nhẹ nhàng cho công sở và đời thường.',
     tag: 'Tự nhiên',
   },
   {
     title: 'Mi Volume 3D',
     subtitle: 'Độ dày ấn tượng',
-    image: '/1787143984341_3902196190291302019_3902196190291302019_f923f89516173009005516cd7519faa1.jpg',
+    image: '1787143984341_3902196190291302019_3902196190291302019_f923f89516173009005516cd7519faa1.jpg',
     desc: 'Kỹ thuật tạo fan mi đa tầng siêu mỏng nhẹ, mang lại hàng mi đen mướt, dày dặn nhưng không nặng mắt.',
     tag: 'Chuyên sâu',
   },
@@ -150,7 +151,7 @@ export default function Services() {
                 {/* Image with shiny hover */}
                 <div className="relative h-64 overflow-hidden shiny-hover">
                   <img
-                    src={svc.image}
+                    src={getAssetUrl(svc.image)}
                     alt={svc.title}
                     className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-700 group-hover:scale-110 transform"
                     loading="lazy"

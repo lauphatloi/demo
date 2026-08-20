@@ -13,6 +13,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { ChevronDown } from 'lucide-react';
+import { getAssetUrl } from '../utils/asset';
 
 export default function Hero() {
   const sectionRef  = useRef<HTMLDivElement>(null);
@@ -67,11 +68,11 @@ export default function Hero() {
         },
       });
 
-      // Background image zooms OUT as we scroll
+      // Background image zooms OUT as we scroll with clean brightness
       tl.fromTo(
         bgRef.current,
-        { scale: 1.18, filter: 'brightness(0.65)' },
-        { scale: 1.0,  filter: 'brightness(0.40)', ease: 'none' },
+        { scale: 1.15, filter: 'brightness(0.85)' },
+        { scale: 1.0,  filter: 'brightness(0.70)', ease: 'none' },
         0
       );
 
@@ -117,19 +118,18 @@ export default function Hero() {
           style={{ transformOrigin: 'center center' }}
         >
           <img
-            src="/banner.png"
+            src={getAssetUrl('banner.png')}
             alt="L'THANH Luxury Eyelash Banner"
             className="w-full h-full object-cover object-center"
             onError={(e) => {
-              // Fallback to second asset name if needed
-              (e.target as HTMLImageElement).src = '/3b662d0e-e3bc-4ad8-aa35-7117acb4db94.png';
+              (e.target as HTMLImageElement).src = getAssetUrl('3b662d0e-e3bc-4ad8-aa35-7117acb4db94.png');
             }}
           />
         </div>
 
-        {/* Layered dark gradients for readability */}
-        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/60 via-black/30 to-black/90" />
-        <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/50 via-transparent to-black/50" />
+        {/* Subtle dark gradient overlay for text legibility while keeping banner clear */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/40 via-transparent to-black/75" />
+        <div className="absolute inset-0 z-[1] bg-black/20" />
 
         {/* ── Decorative golden vertical lines ── */}
         <div className="absolute top-1/4 left-8 md:left-20 w-[1px] h-32 bg-gradient-to-b from-transparent via-[#D4AF37]/50 to-transparent z-[2]" />
@@ -147,7 +147,7 @@ export default function Hero() {
             </span>
           </div>
 
-          {/* Main Vietnamese headline with Playfair Display (100% Vietnamese support) */}
+          {/* Main Vietnamese headline with Playfair Display */}
           <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white leading-[1.12] mb-6 tracking-normal">
             Nâng tầm nét đẹp{' '}
             <span className="block italic text-gradient-gold mt-1 font-serif">

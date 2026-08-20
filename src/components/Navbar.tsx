@@ -12,6 +12,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { Menu, X } from 'lucide-react';
+import { getAssetUrl } from '../utils/asset';
 
 const NAV_LINKS = [
   { label: 'Giới Thiệu', href: '#about'    },
@@ -77,11 +78,11 @@ export default function Navbar() {
           <div className="nav-item flex items-center gap-3.5 cursor-pointer" onClick={() => scrollTo('#home')}>
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shiny-hover flex-shrink-0 shadow-lg">
               <img
-                src="/logo.jpg"
+                src={getAssetUrl('logo.jpg')}
                 alt="L'THANH Eyelash Logo"
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/logo.svg';
+                  (e.target as HTMLImageElement).src = getAssetUrl('logo.svg');
                 }}
               />
             </div>
