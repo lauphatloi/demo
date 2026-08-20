@@ -3,29 +3,24 @@
  *
  * Luxury stacked-card gallery with GSAP ScrollTrigger scrub:
  *
- * 1. INTRO — Fan-in animation: cards enter scattered/rotated from below,
- *    then converge into a single aligned stack with a bounce finish.
- * 2. PIN — Section locks in place while user scrolls.
- * 3. SCRUB — Each scroll step flies the top card left/right off-screen
- *    (alternating side), revealing the next card underneath.
- * 4. REVERSE — Scrolling back re-stacks cards in correct order.
- *
- * Performance notes:
- *  - `will-change: transform, opacity` on every card.
- *  - `transform: translateZ(0)` forces GPU compositing.
- *  - Passive touch listeners via Lenis/ScrollTrigger.
- *  - `loading="lazy"` on all images below the fold.
- *  - Debounced ScrollTrigger.refresh() on resize.
+ * 1. INTRO: Cards start slightly fanned/scattered and gather neatly into a single centered stack.
+ * 2. PINNED SCRUB: As user scrolls, the section is pinned. The top card flies off (alternating left/right),
+ *    revealing the next card underneath.
+ * 3. REVERSIBLE: Scrolling back up re-stacks cards in the exact correct order.
+ * 4. MOBILE / IPHONE OPTIMIZATION:
+ *    - All ScrollTriggers configured statically inside useGSAP (no async creation).
+ *    - `touch-action: pan-y` prevents touch lock on iOS Safari.
+ *    - GPU acceleration (transform: translate3d, will-change).
+ *    - Responsive card sizing and fly-out offsets.
  */
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { getAssetUrl } from '../utils/asset';
-import { Images } from 'lucide-react';
+import { Images, Sparkles } from 'lucide-react';
 
-// ─── All 24 gallery images from /public/gallery ──────────────────────────────
 const GALLERY_FILES = [
   '2aoboqsom6s5aydxmal7iaas0qbk5sk61i8asx0c1.jpg',
   '2aoboqsom8gjfbt44hc8ddnerzrgskhsi4ymjmq42.jpg',
@@ -52,311 +47,229 @@ const GALLERY_FILES = [
   '2aoboqsonzwxgquomzdcux9ogvtalgk4b5ysxobq19.jpg',
 ];
 
-// We only use 23 JPGs (skip the mp4)
 const IMAGES = GALLERY_FILES.map((file) => getAssetUrl(`gallery/${file}`));
-
-// Deterministic random offsets for the fan-in scatter (seeded by index)
-function pseudoRandom(seed: number, scale: number) {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return (x - Math.floor(x) - 0.5) * 2 * scale;
-}
 
 export default function ImageGallery() {
   const sectionRef  = useRef<HTMLDivElement>(null);
-  const stackRef    = useRef<HTMLDivElement>(null);
-  const headerRef   = useRef<HTMLDivElement>(null);
+  const triggerRef  = useRef<HTMLDivElement>(null);
+  const cardsRef    = useRef<(HTMLDivElement | null)[]>([]);
   const counterRef  = useRef<HTMLSpanElement>(null);
 
-  const count = IMAGES.length; // 23
-
-  // Card dimensions: responsive via CSS, but we need numeric estimates for GSAP
-  // px values below are overridden by CSS — used only for fly-out distance calc
-  const FLY_X_DESKTOP = 900;
-  const FLY_X_MOBILE  = 420;
+  const total = IMAGES.length;
 
   useGSAP(() => {
-    if (!stackRef.current || !sectionRef.current) return;
+    const section = sectionRef.current;
+    const trigger = triggerRef.current;
+    if (!section || !trigger) return;
 
-    const cards = gsap.utils.toArray<HTMLElement>('.gal-card');
+    const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
     if (!cards.length) return;
 
     const mm = gsap.matchMedia();
 
-    mm.add(
-      {
-        isMobile: '(max-width: 767px)',
-        isDesktop: '(min-width: 768px)',
-      },
-      (ctx) => {
-        const { isMobile } = ctx.conditions as { isMobile: boolean; isDesktop: boolean };
-        const flyX = isMobile ? FLY_X_MOBILE : FLY_X_DESKTOP;
+    mm.add('(min-width: 0px)', (context) => {
+      const isMobile = window.innerWidth < 768;
+      const flyDistance = isMobile ? window.innerWidth * 1.15 : 850;
 
-        // ── 1. SET initial state: scattered / rotated / below viewport ────────
-        cards.forEach((card, i) => {
-          const seed = i + 1;
-          const scatterX = pseudoRandom(seed * 3, isMobile ? 80 : 160);
-          const scatterY = pseudoRandom(seed * 7, isMobile ? 60 : 120);
-          const scatterR = pseudoRandom(seed * 11, 28);
-          const scatterS = 0.4 + Math.abs(pseudoRandom(seed * 5, 0.25));
-
-          gsap.set(card, {
-            x: scatterX,
-            y: isMobile ? 340 + Math.abs(scatterY) : 520 + Math.abs(scatterY),
-            rotation: scatterR,
-            scale: scatterS,
-            opacity: 0,
-            zIndex: i,
-            transformOrigin: 'center center',
-            force3D: true,
-          });
+      // ── Set initial zIndex so first images are on top of the stack ─────────
+      cards.forEach((card, index) => {
+        gsap.set(card, {
+          zIndex: total - index,
+          transformOrigin: 'center center',
+          force3D: true,
         });
-
-        // ── 2. INTRO animation: fan-in from scattered → stacked ──────────────
-        const introTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-            once: true,
-          },
-          onComplete: () => {
-            // After intro, immediately set up the pin + scrub
-            buildScrollAnimation(flyX);
-          },
-        });
-
-        // All cards scatter-fly-in staggered
-        introTl.to(cards, {
-          x: 0,
-          y: 0,
-          rotation: 0,
-          scale: 1,
-          opacity: 1,
-          duration: 1.2,
-          stagger: {
-            each: 0.045,
-            from: 'end',
-          },
-          ease: 'power3.out',
-        });
-
-        // Bounce settle
-        introTl.to(cards, {
-          y: -6,
-          duration: 0.18,
-          ease: 'power1.out',
-        });
-        introTl.to(cards, {
-          y: 0,
-          duration: 0.22,
-          ease: 'bounce.out',
-        });
-
-        // Header fades in
-        if (headerRef.current) {
-          introTl.fromTo(
-            headerRef.current,
-            { y: 20, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' },
-            '-=0.8'
-          );
-        }
-      }
-    );
-
-    // ── 3. Scroll-scrub: pin + fly cards out / back in ────────────────────────
-    function buildScrollAnimation(flyX: number) {
-      // Each card gets its own scrub position in the scroll range
-      // Total scroll distance: each card flies in 1/count of total range
-      const scrollPerCard = 1; // normalized units → ScrollTrigger handles px
-
-      const pinTrigger = ScrollTrigger.create({
-        trigger: sectionRef.current!,
-        start: 'top top',
-        end: `+=${count * (window.innerWidth < 768 ? 220 : 280)}`,
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
       });
 
-      // Individual ScrollTrigger per card so reversing restores correct order
-      cards.forEach((card, i) => {
-        const flyDirection = i % 2 === 0 ? -1 : 1; // alternate left / right
-        const cardEl = card as HTMLElement;
+      // ── Main Timeline with ScrollTrigger Pin ───────────────────────────────
+      const scrollDistance = isMobile ? total * 160 : total * 220;
 
-        // Natural z-order: top card = last index (highest zIndex)
-        const zTop = count - i;
-        gsap.set(cardEl, { zIndex: zTop });
-
-        ScrollTrigger.create({
-          trigger: sectionRef.current!,
-          start: `top+=${(count - 1 - i) * (window.innerWidth < 768 ? 220 : 280)} top`,
-          end: `top+=${(count - i) * (window.innerWidth < 768 ? 220 : 280)} top`,
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: trigger,
+          start: 'top top',
+          end: `+=${scrollDistance}`,
+          pin: true,
+          pinSpacing: true,
           scrub: 0.6,
-          onUpdate(self) {
-            const p = self.progress; // 0 → 1
-
-            if (p <= 0) {
-              // Fully on stack
-              gsap.set(cardEl, {
-                x: 0,
-                y: 0,
-                rotation: 0,
-                opacity: 1,
-                scale: 1,
-                zIndex: zTop,
-              });
-              return;
-            }
-
-            // Flying out
-            const flyRotation = flyDirection * p * 18;
-            const flyXVal    = flyDirection * p * flyX;
-            const flyOpacity = 1 - Math.pow(p, 1.5);
-            const flyScale   = 1 - p * 0.08;
-
-            gsap.set(cardEl, {
-              x: flyXVal,
-              y: p * -40,
-              rotation: flyRotation,
-              opacity: flyOpacity,
-              scale: flyScale,
-              // Drop z-index while flying so next card shows on top
-              zIndex: p > 0.5 ? 0 : zTop,
-            });
-
-            // Update counter
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
             if (counterRef.current) {
-              const shown = Math.max(1, count - Math.round(self.scroll() / (window.innerWidth < 768 ? 220 : 280)));
-              counterRef.current.textContent = `${Math.min(shown, count)}`;
+              const currentIdx = Math.min(
+                total,
+                Math.max(1, Math.floor(self.progress * (total - 1)) + 1)
+              );
+              counterRef.current.textContent = `${currentIdx}`;
             }
           },
+        },
+      });
+
+      // ── 1. Intro Fan-In Phase (First 5% of scroll) ─────────────────────────
+      cards.forEach((card, i) => {
+        const seed = i + 1;
+        const initRot = (seed % 2 === 0 ? 1 : -1) * ((seed * 4) % 12);
+        const initX = (seed % 2 === 0 ? 1 : -1) * ((seed * 7) % 25);
+        const initY = 40 + ((seed * 3) % 20);
+
+        // Start slightly fanned out
+        gsap.set(card, {
+          rotation: initRot,
+          x: initX,
+          y: initY,
+          scale: 0.95,
+          opacity: 0.9,
         });
+
+        // Gather into neat stack
+        tl.to(
+          card,
+          {
+            rotation: 0,
+            x: 0,
+            y: 0,
+            scale: 1,
+            opacity: 1,
+            duration: 0.5,
+            ease: 'power2.out',
+          },
+          0
+        );
       });
 
-      // Cleanup on component unmount
-      return () => {
-        pinTrigger.kill();
-      };
-    }
+      // ── 2. Card Stack Fly-Out (Remaining 95% of scroll) ───────────────────
+      // We animate from top card (index 0) to second-to-last card (index total-2)
+      // The last card (index total-1) remains visible at the bottom
+      const cardsToAnimate = cards.slice(0, total - 1);
+      const stepDuration = 1.0;
 
-    return () => {
-      mm.revert();
-      ScrollTrigger.getAll().forEach((st) => {
-        if (st.trigger === sectionRef.current) st.kill();
+      cardsToAnimate.forEach((card, i) => {
+        const isEven = i % 2 === 0;
+        const dir = isEven ? -1 : 1; // alternate fly left / right
+        const startTime = 0.5 + i * stepDuration;
+
+        tl.to(
+          card,
+          {
+            x: dir * flyDistance,
+            y: -30 + (i % 3) * 15,
+            rotation: dir * (15 + (i % 4) * 3),
+            opacity: 0,
+            scale: 0.9,
+            duration: stepDuration,
+            ease: 'power1.inOut',
+          },
+          startTime
+        );
       });
-    };
+    });
+
+    return () => mm.revert();
   }, { scope: sectionRef });
 
   return (
     <section
       id="gallery"
       ref={sectionRef}
-      className="relative bg-[#050505] overflow-hidden"
-      style={{ minHeight: '100vh' }}
+      className="relative bg-[#050505] text-white overflow-hidden border-t border-white/[0.06]"
+      style={{ touchAction: 'pan-y' }}
     >
-      {/* ── Background glow ── */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#D4AF37]/4 rounded-full blur-[160px]" />
-      </div>
-
-      {/* ── Decorative grid ── */}
+      {/* ── Pinned Viewport Container ── */}
       <div
-        className="absolute inset-0 opacity-[0.018] pointer-events-none"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, #D4AF37 1px, transparent 1px), linear-gradient(to bottom, #D4AF37 1px, transparent 1px)',
-          backgroundSize: '55px 55px',
-        }}
-      />
-
-      {/* ── Section Header ── */}
-      <div
-        ref={headerRef}
-        className="opacity-0 pt-16 md:pt-24 pb-8 text-center px-5 relative z-10"
+        ref={triggerRef}
+        className="w-full h-screen flex flex-col justify-between py-6 md:py-10 px-4 max-w-7xl mx-auto relative overflow-hidden"
+        style={{ touchAction: 'pan-y' }}
       >
-        <span className="font-sans text-[#D4AF37] text-[10px] tracking-[0.35em] uppercase mb-3 block font-semibold">
-          Bộ sưu tập — Portfolio
-        </span>
-        <h2 className="font-serif text-3xl md:text-5xl text-white mb-3">
-          Khoảnh Khắc Đẹp
-        </h2>
-        <p className="font-sans text-zinc-400 text-sm font-light max-w-md mx-auto leading-relaxed mb-2">
-          Từng sợi mi — từng nụ cười — từng ánh nhìn tự tin của khách hàng
-          L'Thanh.
-        </p>
+        {/* Ambient golden glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[650px] h-[350px] md:h-[650px] bg-[#D4AF37]/5 rounded-full blur-[140px] pointer-events-none" />
 
-        {/* Live counter */}
-        <div className="inline-flex items-center gap-2 mt-3">
-          <Images size={13} className="text-[#D4AF37]" strokeWidth={1.5} />
-          <span className="font-sans text-zinc-400 text-xs">
-            <span ref={counterRef} className="text-[#D4AF37] font-semibold">
-              {count}
-            </span>{' '}
-            / {count} ảnh
-          </span>
+        {/* ── Section Header ── */}
+        <div className="text-center relative z-20 flex-shrink-0 pt-2">
+          <div className="inline-flex items-center gap-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/25 px-3 py-1 rounded-full mb-2">
+            <Sparkles size={11} className="text-[#D4AF37]" />
+            <span className="font-sans text-[#D4AF37] text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-semibold">
+              Bộ sưu tập nghệ thuật — Portfolio
+            </span>
+          </div>
+
+          <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white font-bold leading-tight">
+            Khoảnh Khắc Đẹp Tại L'Thanh
+          </h2>
+
+          <p className="font-sans text-zinc-400 text-xs md:text-sm font-light max-w-md mx-auto mt-1 line-clamp-1 md:line-clamp-none">
+            Cuộn xuống để lướt từng tác phẩm nối mi và học viên xuất sắc.
+          </p>
+
+          {/* Counter pill */}
+          <div className="inline-flex items-center gap-2 mt-2 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-0.5 rounded-full">
+            <Images size={12} className="text-[#D4AF37]" />
+            <span className="font-sans text-zinc-300 text-[11px]">
+              Tác phẩm <span ref={counterRef} className="text-[#D4AF37] font-bold">1</span> / {total}
+            </span>
+          </div>
         </div>
 
-        <div className="gold-divider max-w-[80px] mx-auto mt-5" />
-      </div>
-
-      {/* ── Card Stack Stage ── */}
-      <div
-        className="
-          relative flex items-center justify-center
-          px-4
-          h-[60vh] md:h-[72vh]
-          z-10
-        "
-        style={{ perspective: '1200px' }}
-      >
+        {/* ── Center Stack Stage ── */}
         <div
-          ref={stackRef}
-          className="relative"
-          style={{
-            width: 'clamp(260px, 72vw, 480px)',
-            height: 'clamp(320px, 88vw, 600px)',
-          }}
+          className="relative flex-1 flex items-center justify-center my-auto w-full z-10"
+          style={{ perspective: '1200px', touchAction: 'pan-y' }}
         >
-          {IMAGES.map((src, i) => (
-            <div
-              key={i}
-              className="gal-card absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden border border-[#D4AF37]/20 shadow-[0_16px_60px_rgba(0,0,0,0.7)]"
-              style={{
-                willChange: 'transform, opacity',
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden',
-              }}
-            >
-              {/* Card image */}
-              <img
-                src={src}
-                alt={`L'Thanh Eyelash gallery ${i + 1}`}
-                className="w-full h-full object-cover"
-                loading={i < 3 ? 'eager' : 'lazy'}
-                decoding="async"
-              />
+          <div
+            className="relative"
+            style={{
+              width: 'clamp(260px, 78vw, 440px)',
+              height: 'clamp(320px, 54vh, 520px)',
+            }}
+          >
+            {IMAGES.map((src, idx) => (
+              <div
+                key={idx}
+                ref={(el) => (cardsRef.current[idx] = el)}
+                className="absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden border border-[#D4AF37]/35 shadow-[0_20px_50px_rgba(0,0,0,0.85)] bg-[#111111]"
+                style={{
+                  willChange: 'transform, opacity',
+                  transform: 'translate3d(0,0,0)',
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                }}
+              >
+                {/* Image */}
+                <img
+                  src={src}
+                  alt={`Tác phẩm L'Thanh Eyelash ${idx + 1}`}
+                  className="w-full h-full object-cover select-none pointer-events-none"
+                  loading={idx < 4 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
 
-              {/* Subtle inner vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10 pointer-events-none" />
+                {/* Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20 pointer-events-none" />
 
-              {/* Card index pill */}
-              <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm border border-[#D4AF37]/30 rounded-full px-3 py-1">
-                <span className="font-sans text-[#D4AF37] text-[10px] tracking-widest font-semibold">
-                  {String(i + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
-                </span>
+                {/* Top luxury badge */}
+                <div className="absolute top-3.5 left-3.5 bg-black/70 backdrop-blur-md border border-[#D4AF37]/40 px-2.5 py-1 rounded-full pointer-events-none">
+                  <span className="font-sans text-[#D4AF37] text-[9px] tracking-widest uppercase font-semibold">
+                    L'Thanh Masterpiece
+                  </span>
+                </div>
+
+                {/* Bottom index indicator */}
+                <div className="absolute bottom-3.5 right-3.5 bg-black/80 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full pointer-events-none">
+                  <span className="font-sans text-white text-[10px] tracking-wider font-medium">
+                    <span className="text-[#D4AF37] font-bold">{String(idx + 1).padStart(2, '0')}</span> / {String(total).padStart(2, '0')}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* ── Scroll hint ── */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 opacity-60">
-        <span className="font-sans text-zinc-400 text-[9px] tracking-[0.3em] uppercase">
-          Cuộn để xem
-        </span>
-        <div className="w-px h-8 bg-gradient-to-b from-[#D4AF37]/60 to-transparent" />
+        {/* ── Bottom Scroll Hint ── */}
+        <div className="text-center relative z-20 flex-shrink-0 pb-1 flex flex-col items-center gap-1">
+          <span className="font-sans text-zinc-400 text-[9px] tracking-[0.25em] uppercase">
+            Cuộn để xem tiếp ↓
+          </span>
+          <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37]/70 to-transparent" />
+        </div>
       </div>
     </section>
   );

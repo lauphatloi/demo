@@ -1,16 +1,18 @@
 /**
  * Feedback.tsx
  *
- * GSAP Animation 7 — Horizontal Scroll (Pinned):
+ * GSAP Animation 7 — Horizontal Scroll (Pinned on Desktop):
  *   On desktop (>=768px): The section is pinned and feedback cards translate
  *   horizontally in sync with vertical scroll (scrub).
- *   Features real client photos uploaded by the user from public folder.
+ *   On mobile (<768px): Touch-friendly horizontal carousel with touch-action: pan-y
+ *   so vertical swipe never freezes or blocks page scrolling on iPhone/iOS.
  */
 
 import React, { useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import { Star } from 'lucide-react';
+import { Star, ChevronRight } from 'lucide-react';
 import { getAssetUrl } from '../utils/asset';
 
 const REVIEWS = [
@@ -63,41 +65,44 @@ export default function Feedback() {
   useGSAP(() => {
     const mm = gsap.matchMedia();
 
-    // Desktop: Horizontal scroll pinned
+    // Desktop only: Horizontal scroll pinned with ScrollTrigger
     mm.add('(min-width: 768px)', () => {
-      if (!trackRef.current || !sectionRef.current) return;
+      const track = trackRef.current;
+      const section = sectionRef.current;
+      if (!track || !section) return;
 
-      const totalWidth = trackRef.current.scrollWidth;
+      const totalWidth = track.scrollWidth;
       const viewportWidth = window.innerWidth;
       const scrollDistance = totalWidth - viewportWidth;
 
-      gsap.to(trackRef.current, {
+      gsap.to(track, {
         x: () => -scrollDistance,
         ease: 'none',
         scrollTrigger: {
-          trigger: sectionRef.current,
+          trigger: section,
           pin: true,
-          scrub: 1,
+          scrub: 0.8,
           end: () => '+=' + scrollDistance,
           invalidateOnRefresh: true,
+          anticipatePin: 1,
         },
       });
     });
 
-    // Mobile: Simple fade-up
+    // Mobile: Simple entrance fade-in (native touch-pan-x carousel for effortless scrolling)
     mm.add('(max-width: 767px)', () => {
       gsap.fromTo(
         '.feedback-card',
-        { opacity: 0, y: 20 },
+        { opacity: 0, y: 30 },
         {
           opacity: 1,
           y: 0,
-          stagger: 0.08,
-          duration: 0.5,
+          stagger: 0.1,
+          duration: 0.6,
           ease: 'power2.out',
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: 'top 80%',
+            start: 'top 85%',
             toggleActions: 'play none none reverse',
           },
         }
@@ -111,10 +116,10 @@ export default function Feedback() {
     <section
       id="feedback"
       ref={sectionRef}
-      className="relative bg-[#080808] overflow-hidden"
+      className="relative bg-[#080808] overflow-hidden border-t border-white/5"
     >
       {/* ── Section Header ── */}
-      <div className="pt-20 md:pt-28 pb-10 md:pb-12 px-5 md:px-16 max-w-7xl mx-auto">
+      <div className="pt-20 md:pt-28 pb-8 md:pb-12 px-5 md:px-16 max-w-7xl mx-auto">
         <span className="font-sans text-[#D4AF37] text-[10px] tracking-[0.35em] uppercase mb-3 block font-semibold">
           Khách hàng tại L'Thanh
         </span>
@@ -122,52 +127,58 @@ export default function Feedback() {
           <h2 className="font-serif text-3xl md:text-5xl text-white">
             Khách Hàng Chia Sẻ
           </h2>
-          <p className="font-sans text-zinc-400 text-sm hidden md:block">
-            Cuộn ngang để xem thêm đánh giá →
+          <p className="font-sans text-zinc-400 text-xs md:text-sm flex items-center gap-1.5">
+            <span className="md:hidden">Vuốt sang để xem thêm</span>
+            <span className="hidden md:inline">Cuộn để xem tiếp</span>
+            <ChevronRight size={14} className="text-[#D4AF37]" />
           </p>
         </div>
         <div className="gold-divider w-24 mt-5" />
       </div>
 
       {/* Track wrapper */}
-      <div className="overflow-hidden">
+      <div className="overflow-hidden w-full pb-16 md:pb-24">
         <div
           ref={trackRef}
           className="
-            flex gap-6 pb-20
-            md:pb-28 md:gap-8
+            flex gap-5 md:gap-8
             px-5 md:px-16
             overflow-x-auto md:overflow-x-visible
             snap-x snap-mandatory md:snap-none
             hide-scrollbar
-            will-change-transform
+            w-auto md:w-max
           "
-          style={{ width: 'max-content' }}
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-x pan-y',
+          }}
         >
           {REVIEWS.map((review, i) => (
             <div
               key={i}
-              className="feedback-card flex-shrink-0 w-[85vw] md:w-[520px] snap-start"
+              className="feedback-card flex-shrink-0 w-[84vw] max-w-[420px] md:max-w-none md:w-[500px] snap-start"
+              style={{ touchAction: 'pan-x pan-y' }}
             >
-              <div className="h-full bg-[#0f0f0f] border border-white/10 hover:border-[#D4AF37]/40 rounded-2xl p-7 md:p-9 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(212,175,55,0.08)] relative flex flex-col justify-between">
+              <div className="h-full bg-[#0f0f0f] border border-white/10 hover:border-[#D4AF37]/40 rounded-2xl p-6 md:p-8 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(212,175,55,0.08)] relative flex flex-col justify-between">
 
                 {/* Quote decoration */}
-                <div className="absolute top-6 right-8 font-serif text-7xl text-[#D4AF37]/10 leading-none select-none">
+                <div className="absolute top-5 right-7 font-serif text-6xl text-[#D4AF37]/10 leading-none select-none pointer-events-none">
                   "
                 </div>
 
                 <div>
                   {/* Top row: Client photo + Name + Tag */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#D4AF37]/60 flex-shrink-0 shadow-md">
+                  <div className="flex items-center gap-3.5 mb-5">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4AF37]/60 flex-shrink-0 shadow-md">
                       <img
                         src={getAssetUrl(review.image)}
                         alt={review.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div>
-                      <h4 className="font-serif text-white text-lg font-semibold">{review.name}</h4>
+                      <h4 className="font-serif text-white text-base md:text-lg font-semibold">{review.name}</h4>
                       <p className="font-sans text-zinc-400 text-xs mt-0.5">{review.role}</p>
                       <span className="inline-block font-sans text-[#D4AF37] text-[9px] tracking-wider uppercase border border-[#D4AF37]/30 px-2 py-0.5 rounded-full mt-1.5 font-medium">
                         {review.style}
@@ -176,21 +187,21 @@ export default function Feedback() {
                   </div>
 
                   {/* Stars */}
-                  <div className="flex gap-1 mb-4">
+                  <div className="flex gap-1 mb-3.5">
                     {Array.from({ length: review.stars }).map((_, si) => (
-                      <Star key={si} className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                      <Star key={si} className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
                     ))}
                   </div>
 
                   {/* Review text */}
-                  <p className="font-sans text-zinc-300 font-light leading-relaxed text-sm md:text-base italic mb-4 relative z-10">
+                  <p className="font-sans text-zinc-300 font-light leading-relaxed text-xs md:text-sm italic mb-4 relative z-10">
                     "{review.text}"
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-500">
+                <div className="pt-3.5 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-500">
                   <span>✓ Đã xác thực dịch vụ</span>
-                  <span className="text-[#D4AF37]">5.0 / 5.0</span>
+                  <span className="text-[#D4AF37] font-semibold">5.0 / 5.0</span>
                 </div>
 
               </div>
@@ -198,7 +209,7 @@ export default function Feedback() {
           ))}
 
           {/* End spacer */}
-          <div className="flex-shrink-0 w-5 md:w-16" />
+          <div className="flex-shrink-0 w-2 md:w-16" />
         </div>
       </div>
     </section>

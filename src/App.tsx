@@ -24,13 +24,16 @@ import CustomCursor from './components/CustomCursor';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Prevent mobile Safari address bar resize events from glitching pinned triggers
+ScrollTrigger.config({ ignoreMobileResize: true });
+
 export default function App() {
   useEffect(() => {
     // ─── Lenis Smooth Scroll Setup ──────────────────────────────────────────
     const lenis = new Lenis({
-      lerp: 0.08,               // Lower = smoother/slower momentum
+      lerp: 0.08,
       wheelMultiplier: 1.0,
-      touchMultiplier: 2.0,
+      touchMultiplier: 1.0,
       smoothWheel: true,
       syncTouch: false,
     });
@@ -55,7 +58,7 @@ export default function App() {
     let resizeTimer: ReturnType<typeof setTimeout>;
     const onResize = () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => ScrollTrigger.refresh(), 250);
+      resizeTimer = setTimeout(() => ScrollTrigger.refresh(), 200);
     };
     window.addEventListener('resize', onResize);
 
@@ -69,10 +72,9 @@ export default function App() {
   }, []);
 
   return (
-    // overflow-x-hidden on the root wrapper is the primary safeguard for mobile
     <div
-      className="bg-black text-white min-h-screen overflow-x-hidden relative"
-      style={{ overflowX: 'hidden' }}
+      className="bg-black text-white min-h-screen relative"
+      style={{ overflowX: 'clip' }}
     >
       {/* Luxury gold cursor (desktop only) */}
       <CustomCursor />
@@ -80,13 +82,9 @@ export default function App() {
       {/* Navbar — sticky / fixed on top */}
       <Navbar />
 
-      {/*
-       * Main content sits above the fixed footer with z-index: 10.
-       * margin-bottom allows the page to scroll past the main area
-       * and uncover the fixed footer smoothly (GSAP Animation 11).
-       */}
+      {/* Main content sits above fixed footer */}
       <main
-        className="relative z-10 bg-black overflow-x-hidden"
+        className="relative z-10 bg-black"
         style={{
           marginBottom: 'clamp(320px, 48vh, 520px)',
           boxShadow: '0 30px 100px rgba(0,0,0,1)',
