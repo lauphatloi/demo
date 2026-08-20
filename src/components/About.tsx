@@ -36,17 +36,22 @@ export default function About() {
 
         const wordSpans = textRef.current.querySelectorAll('span');
 
-        gsap.to(wordSpans, {
-          opacity: 1,
-          stagger: 0.04,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 55%',
-            end: 'bottom 70%',
-            scrub: 1.5,
-          },
-        });
+        gsap.fromTo(
+          wordSpans,
+          { opacity: 0.15, color: '#a1a1aa' },
+          {
+            opacity: 1,
+            color: '#ffffff',
+            stagger: 0.03,
+            ease: 'power1.out',
+            scrollTrigger: {
+              trigger: textRef.current,
+              start: 'top 75%',
+              end: 'bottom 35%',
+              scrub: 0.8,
+            },
+          }
+        );
       }
 
       // ── Section title fade up ──────────────────────────────────────────────

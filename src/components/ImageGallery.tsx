@@ -1,20 +1,23 @@
 /**
  * ImageGallery.tsx
  *
- * Luxury stacked-card gallery with GSAP ScrollTrigger scrub:
+ * High-Performance Luxury Stacked-Card Gallery:
  *
- * 1. INTRO: Cards start slightly fanned/scattered and gather neatly into a single centered stack.
- * 2. PINNED SCRUB: As user scrolls, the section is pinned. The top card flies off (alternating left/right),
- *    revealing the next card underneath.
- * 3. REVERSIBLE: Scrolling back up re-stacks cards in the exact correct order.
- * 4. MOBILE / IPHONE OPTIMIZATION:
- *    - All ScrollTriggers configured statically inside useGSAP (no async creation).
- *    - `touch-action: pan-y` prevents touch lock on iOS Safari.
- *    - GPU acceleration (transform: translate3d, will-change).
- *    - Responsive card sizing and fly-out offsets.
+ * 1. PINNED PANEL LOCK:
+ *    Section pins strictly on-screen (`pin: true`, `pinSpacing: true`). The user must
+ *    scroll through all 23 cards within this single panel before proceeding to <News />.
+ *
+ * 2. VIRTUALIZED STACK OPTIMIZATION (60–120 FPS):
+ *    Only the currently active card and the next 2 upcoming cards are rendered/composited.
+ *    Cards outside the active viewing window are automatically hidden (`visibility: hidden`)
+ *    to eliminate GPU overdraw, memory pressure, and scroll lag.
+ *
+ * 3. INTRO & REVERSIBLE STACKING:
+ *    Cards smoothly fan in on enter, fly off alternating left/right on scroll down,
+ *    and seamlessly re-stack in reverse order on scroll up.
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -50,138 +53,129 @@ const GALLERY_FILES = [
 const IMAGES = GALLERY_FILES.map((file) => getAssetUrl(`gallery/${file}`));
 
 export default function ImageGallery() {
-  const sectionRef  = useRef<HTMLDivElement>(null);
-  const triggerRef  = useRef<HTMLDivElement>(null);
-  const cardsRef    = useRef<(HTMLDivElement | null)[]>([]);
-  const counterRef  = useRef<HTMLSpanElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const counterRef = useRef<HTMLSpanElement>(null);
 
   const total = IMAGES.length;
 
   useGSAP(() => {
     const section = sectionRef.current;
-    const trigger = triggerRef.current;
-    if (!section || !trigger) return;
+    if (!section) return;
 
     const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
     if (!cards.length) return;
 
-    const mm = gsap.matchMedia();
+    const isMobile = window.innerWidth < 768;
+    const flyDistance = isMobile ? window.innerWidth * 1.25 : 950;
+    const scrollDistance = isMobile ? total * 180 : total * 240;
 
-    mm.add('(min-width: 0px)', (context) => {
-      const isMobile = window.innerWidth < 768;
-      const flyDistance = isMobile ? window.innerWidth * 1.15 : 850;
-
-      // ── Set initial zIndex so first images are on top of the stack ─────────
-      cards.forEach((card, index) => {
-        gsap.set(card, {
-          zIndex: total - index,
-          transformOrigin: 'center center',
-          force3D: true,
-        });
-      });
-
-      // ── Main Timeline with ScrollTrigger Pin ───────────────────────────────
-      const scrollDistance = isMobile ? total * 160 : total * 220;
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: trigger,
-          start: 'top top',
-          end: `+=${scrollDistance}`,
-          pin: true,
-          pinSpacing: true,
-          scrub: 0.6,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            if (counterRef.current) {
-              const currentIdx = Math.min(
-                total,
-                Math.max(1, Math.floor(self.progress * (total - 1)) + 1)
-              );
-              counterRef.current.textContent = `${currentIdx}`;
-            }
-          },
-        },
-      });
-
-      // ── 1. Intro Fan-In Phase (First 5% of scroll) ─────────────────────────
-      cards.forEach((card, i) => {
-        const seed = i + 1;
-        const initRot = (seed % 2 === 0 ? 1 : -1) * ((seed * 4) % 12);
-        const initX = (seed % 2 === 0 ? 1 : -1) * ((seed * 7) % 25);
-        const initY = 40 + ((seed * 3) % 20);
-
-        // Start slightly fanned out
-        gsap.set(card, {
-          rotation: initRot,
-          x: initX,
-          y: initY,
-          scale: 0.95,
-          opacity: 0.9,
-        });
-
-        // Gather into neat stack
-        tl.to(
-          card,
-          {
-            rotation: 0,
-            x: 0,
-            y: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 0.5,
-            ease: 'power2.out',
-          },
-          0
-        );
-      });
-
-      // ── 2. Card Stack Fly-Out (Remaining 95% of scroll) ───────────────────
-      // We animate from top card (index 0) to second-to-last card (index total-2)
-      // The last card (index total-1) remains visible at the bottom
-      const cardsToAnimate = cards.slice(0, total - 1);
-      const stepDuration = 1.0;
-
-      cardsToAnimate.forEach((card, i) => {
-        const isEven = i % 2 === 0;
-        const dir = isEven ? -1 : 1; // alternate fly left / right
-        const startTime = 0.5 + i * stepDuration;
-
-        tl.to(
-          card,
-          {
-            x: dir * flyDistance,
-            y: -30 + (i % 3) * 15,
-            rotation: dir * (15 + (i % 4) * 3),
-            opacity: 0,
-            scale: 0.9,
-            duration: stepDuration,
-            ease: 'power1.inOut',
-          },
-          startTime
-        );
+    // ── Set initial zIndex & transform optimizations ────────────────────────
+    cards.forEach((card, index) => {
+      gsap.set(card, {
+        zIndex: total - index,
+        transformOrigin: 'center center',
+        force3D: true,
+        // Only keep the first 3 cards visible initially to conserve GPU memory
+        visibility: index <= 2 ? 'visible' : 'hidden',
       });
     });
 
-    return () => mm.revert();
+    // ── Single Master Timeline with Pinned Panel Lock ───────────────────────
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: `+=${scrollDistance}`,
+        pin: true,
+        pinSpacing: true,
+        scrub: 0.5,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const progress = self.progress; // 0 to 1
+          const activeIndex = Math.min(
+            total - 1,
+            Math.floor(progress * (total - 1))
+          );
+
+          // Update counter
+          if (counterRef.current) {
+            counterRef.current.textContent = `${activeIndex + 1}`;
+          }
+
+          // ── Virtualization: Dynamically toggle visibility for high performance
+          // Only cards within [activeIndex - 1, activeIndex + 2] need to be rendered
+          cards.forEach((card, i) => {
+            const isVisible = i >= activeIndex - 1 && i <= activeIndex + 2;
+            card.style.visibility = isVisible ? 'visible' : 'hidden';
+          });
+        },
+      },
+    });
+
+    // ── 1. Intro Gathering Phase (First 0.4s of timeline) ───────────────────
+    cards.slice(0, 3).forEach((card, i) => {
+      const seed = i + 1;
+      const initRot = (seed % 2 === 0 ? 1 : -1) * 6;
+      const initY = 30;
+
+      gsap.set(card, { rotation: initRot, y: initY, scale: 0.96 });
+
+      tl.to(
+        card,
+        {
+          rotation: 0,
+          y: 0,
+          scale: 1,
+          duration: 0.4,
+          ease: 'power2.out',
+        },
+        0
+      );
+    });
+
+    // ── 2. Card Fly-Out Sequence ────────────────────────────────────────────
+    const cardsToFly = cards.slice(0, total - 1);
+    const stepDuration = 1.0;
+
+    cardsToFly.forEach((card, i) => {
+      const isEven = i % 2 === 0;
+      const dir = isEven ? -1 : 1; // Alternate flying left vs right
+      const startTime = 0.4 + i * stepDuration;
+
+      tl.to(
+        card,
+        {
+          x: dir * flyDistance,
+          y: -40 + (i % 3) * 15,
+          rotation: dir * (16 + (i % 3) * 4),
+          opacity: 0,
+          scale: 0.88,
+          duration: stepDuration,
+          ease: 'power1.inOut',
+        },
+        startTime
+      );
+    });
   }, { scope: sectionRef });
 
   return (
     <section
       id="gallery"
       ref={sectionRef}
-      className="relative bg-[#050505] text-white overflow-hidden border-t border-white/[0.06]"
+      className="relative bg-[#040404] text-white overflow-hidden border-t border-white/[0.06] select-none"
       style={{ touchAction: 'pan-y' }}
     >
-      {/* ── Pinned Viewport Container ── */}
+      {/* ── Fixed Viewport Panel ── */}
       <div
-        ref={triggerRef}
+        ref={containerRef}
         className="w-full h-screen flex flex-col justify-between py-6 md:py-10 px-4 max-w-7xl mx-auto relative overflow-hidden"
         style={{ touchAction: 'pan-y' }}
       >
-        {/* Ambient golden glows */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[650px] h-[350px] md:h-[650px] bg-[#D4AF37]/5 rounded-full blur-[140px] pointer-events-none" />
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#D4AF37]/5 rounded-full blur-[130px] pointer-events-none" />
 
         {/* ── Section Header ── */}
         <div className="text-center relative z-20 flex-shrink-0 pt-2">
@@ -197,11 +191,11 @@ export default function ImageGallery() {
           </h2>
 
           <p className="font-sans text-zinc-400 text-xs md:text-sm font-light max-w-md mx-auto mt-1 line-clamp-1 md:line-clamp-none">
-            Cuộn xuống để lướt từng tác phẩm nối mi và học viên xuất sắc.
+            Khám phá trọn bộ các tác phẩm nghệ thuật nối mi và học viên xuất sắc.
           </p>
 
-          {/* Counter pill */}
-          <div className="inline-flex items-center gap-2 mt-2 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-0.5 rounded-full">
+          {/* Real-time card counter */}
+          <div className="inline-flex items-center gap-2 mt-2.5 bg-black/70 backdrop-blur-sm border border-white/10 px-3.5 py-1 rounded-full">
             <Images size={12} className="text-[#D4AF37]" />
             <span className="font-sans text-zinc-300 text-[11px]">
               Tác phẩm <span ref={counterRef} className="text-[#D4AF37] font-bold">1</span> / {total}
@@ -209,7 +203,7 @@ export default function ImageGallery() {
           </div>
         </div>
 
-        {/* ── Center Stack Stage ── */}
+        {/* ── Pinned Card Deck Stage ── */}
         <div
           className="relative flex-1 flex items-center justify-center my-auto w-full z-10"
           style={{ perspective: '1200px', touchAction: 'pan-y' }}
@@ -225,7 +219,7 @@ export default function ImageGallery() {
               <div
                 key={idx}
                 ref={(el) => (cardsRef.current[idx] = el)}
-                className="absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden border border-[#D4AF37]/35 shadow-[0_20px_50px_rgba(0,0,0,0.85)] bg-[#111111]"
+                className="absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden border border-[#D4AF37]/30 bg-[#0d0d0d] shadow-[0_15px_40px_rgba(0,0,0,0.85)]"
                 style={{
                   willChange: 'transform, opacity',
                   transform: 'translate3d(0,0,0)',
@@ -243,17 +237,17 @@ export default function ImageGallery() {
                 />
 
                 {/* Vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
 
-                {/* Top luxury badge */}
-                <div className="absolute top-3.5 left-3.5 bg-black/70 backdrop-blur-md border border-[#D4AF37]/40 px-2.5 py-1 rounded-full pointer-events-none">
+                {/* Luxury badge */}
+                <div className="absolute top-3.5 left-3.5 bg-black/75 backdrop-blur-sm border border-[#D4AF37]/40 px-2.5 py-0.5 rounded-full pointer-events-none">
                   <span className="font-sans text-[#D4AF37] text-[9px] tracking-widest uppercase font-semibold">
                     L'Thanh Masterpiece
                   </span>
                 </div>
 
-                {/* Bottom index indicator */}
-                <div className="absolute bottom-3.5 right-3.5 bg-black/80 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full pointer-events-none">
+                {/* Index indicator */}
+                <div className="absolute bottom-3.5 right-3.5 bg-black/80 backdrop-blur-sm border border-white/15 px-3 py-1 rounded-full pointer-events-none">
                   <span className="font-sans text-white text-[10px] tracking-wider font-medium">
                     <span className="text-[#D4AF37] font-bold">{String(idx + 1).padStart(2, '0')}</span> / {String(total).padStart(2, '0')}
                   </span>
@@ -263,10 +257,10 @@ export default function ImageGallery() {
           </div>
         </div>
 
-        {/* ── Bottom Scroll Hint ── */}
+        {/* ── Bottom Scroll Guidance ── */}
         <div className="text-center relative z-20 flex-shrink-0 pb-1 flex flex-col items-center gap-1">
           <span className="font-sans text-zinc-400 text-[9px] tracking-[0.25em] uppercase">
-            Cuộn để xem tiếp ↓
+            Cuộn để xem hết bộ sưu tập ↓
           </span>
           <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37]/70 to-transparent" />
         </div>
