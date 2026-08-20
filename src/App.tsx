@@ -15,6 +15,7 @@ import Services from './components/Services';
 import Academy from './components/Academy';
 import Criteria from './components/Criteria';
 import Feedback from './components/Feedback';
+import ImageGallery from './components/ImageGallery';
 import News from './components/News';
 import BookingForm from './components/BookingForm';
 import FloatingActions from './components/FloatingActions';
@@ -97,6 +98,7 @@ export default function App() {
         <Academy />
         <Criteria />
         <Feedback />
+        <ImageGallery />
         <News />
         <BookingForm />
       </main>
