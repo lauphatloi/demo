@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================
+   GLOBAL RESET & SCROLLBAR HIDING (MOBILE & DESKTOP)
+   Strict requirement: No horizontal overflow & hidden scrollbars
+   ===================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-gold-light: #FFDF73;
+  --color-gold-default: #D4AF37;
+  --color-gold-dark: #AA7700;
+}
+
+html,
+body {
+  overflow-x: hidden;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: 'Montserrat', 'Be Vietnam Pro', sans-serif;
+  
+  /* Hide native scrollbar globally */
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari/Opera */
+  width: 0;
+  height: 0;
+}
+
+/* Hide scrollbar on any element */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* =====================================================
+   SHINY HOVER EFFECT
+   A glossy, diagonal light streak (glass wipe) sweeping
+   smoothly from top-left to bottom-right across the element
+   ===================================================== */
+.shiny-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.shiny-hover::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -120%;
+  width: 60%;
+  height: 220%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: left 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.shiny-hover:hover::after {
+  left: 190%;
+}
+
+/* =====================================================
+   GOLD TEXT GRADIENT
+   ===================================================== */
+.text-gradient-gold {
+  background: linear-gradient(
+    135deg,
+    #FFDF73 0%,
+    #D4AF37 50%,
+    #AA7700 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* =====================================================
+   GOLDEN DIVIDER
+   ===================================================== */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    #D4AF37,
+    transparent
+  );
+}
+
+/* =====================================================
+   3D PERSPECTIVE & CARDS
+   ===================================================== */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.service-card {
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+/* =====================================================
+   LENIS SMOOTH SCROLL INTEGRATION
+   ===================================================== */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}

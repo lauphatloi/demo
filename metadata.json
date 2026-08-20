@@ -1,0 +1,6 @@
+{
+  "name": "GSAP Scrollytelling Experience",
+  "description": "A premium web experience built with GSAP showcasing high-performance scroll-triggered animations and seamless horizontal scrolling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
