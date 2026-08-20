@@ -114,7 +114,7 @@ export default function Navbar() {
           <div className="nav-item flex items-center gap-4">
             <button
               onClick={() => scrollTo('#booking')}
-              className="shiny-hover bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-xs py-2.5 px-6 rounded-full uppercase tracking-widest transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(212,175,55,0.5)]"
+              className="btn-shimmer shiny-hover bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-xs py-2.5 px-6 rounded-full uppercase tracking-widest cursor-pointer"
             >
               Đặt Lịch Ngay
             </button>
@@ -145,7 +145,7 @@ export default function Navbar() {
           ))}
           <button
             onClick={() => scrollTo('#booking')}
-            className="shiny-hover mt-6 bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-sm py-4 px-12 rounded-full uppercase tracking-widest"
+            className="btn-shimmer shiny-hover mt-6 bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-sm py-4 px-12 rounded-full uppercase tracking-widest cursor-pointer"
           >
             Đặt Lịch Ngay
           </button>

@@ -233,7 +233,7 @@ export default function Academy() {
           <div className="academy-item mt-10">
             <button
               onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: 'smooth' })}
-              className="shiny-hover bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-xs py-4 px-10 rounded-full uppercase tracking-widest hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+              className="btn-shimmer shiny-hover bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-xs py-4 px-10 rounded-full uppercase tracking-widest cursor-pointer shadow-[0_0_30px_rgba(212,175,55,0.4)]"
             >
               Nhận tư vấn khóa học
             </button>

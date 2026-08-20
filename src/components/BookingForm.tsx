@@ -267,7 +267,7 @@ export default function BookingForm() {
               {/* Submit */}
               <button
                 type="submit"
-                className="shiny-hover w-full bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-xs py-4 rounded-xl uppercase tracking-widest hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(212,175,55,0.35)] transition-all duration-300 mt-2"
+                className="btn-shimmer shiny-hover w-full bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-bold text-xs py-4 rounded-xl uppercase tracking-widest cursor-pointer shadow-[0_10px_35px_rgba(212,175,55,0.35)] mt-2"
               >
                 Xác nhận đặt lịch
               </button>

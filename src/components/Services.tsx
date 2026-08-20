@@ -195,7 +195,7 @@ export default function Services() {
         <div className="text-center mt-14">
           <button
             onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: 'smooth' })}
-            className="shiny-hover border border-[#D4AF37]/60 text-[#D4AF37] hover:text-black hover:bg-[#D4AF37] font-sans text-xs py-4 px-10 rounded-full uppercase tracking-widest transition-all duration-300 font-semibold shadow-[0_0_20px_rgba(212,175,55,0.15)]"
+            className="btn-shimmer shiny-hover bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans text-xs py-4 px-10 rounded-full uppercase tracking-widest transition-all duration-300 font-bold shadow-[0_0_25px_rgba(212,175,55,0.4)] cursor-pointer"
           >
             Tư vấn chọn kiểu mi phù hợp
           </button>

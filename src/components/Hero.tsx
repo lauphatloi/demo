@@ -164,16 +164,16 @@ export default function Hero() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <button
-              onClick={() => document.querySelector('#services')?.scrollIntoView({ behavior: 'smooth' })}
-              className="shiny-hover bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-xs py-4 px-10 rounded-full uppercase tracking-widest transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.5)]"
-            >
-              Khám phá dịch vụ
-            </button>
-            <button
               onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: 'smooth' })}
-              className="shiny-hover border border-[#D4AF37]/70 text-[#FFDF73] font-sans font-medium text-xs py-4 px-10 rounded-full uppercase tracking-widest transition-all duration-300 hover:bg-[#D4AF37]/15 hover:border-[#D4AF37] backdrop-blur-sm"
+              className="btn-shimmer shiny-hover bg-gradient-to-r from-[#D4AF37] to-[#AA7700] text-black font-sans font-semibold text-xs py-4 px-10 rounded-full uppercase tracking-widest cursor-pointer shadow-[0_0_30px_rgba(212,175,55,0.4)]"
             >
               Đặt lịch hẹn ngay
+            </button>
+            <button
+              onClick={() => document.querySelector('#services')?.scrollIntoView({ behavior: 'smooth' })}
+              className="shiny-hover border border-[#D4AF37]/80 text-[#FFDF73] font-sans font-medium text-xs py-4 px-10 rounded-full uppercase tracking-widest transition-all duration-300 hover:bg-[#D4AF37]/15 hover:border-[#D4AF37] backdrop-blur-sm cursor-pointer"
+            >
+              Khám phá dịch vụ
             </button>
           </div>
         </div>

@@ -82,11 +82,11 @@ export default function FloatingActions() {
         <button
           onClick={() => document.querySelector('#booking')?.scrollIntoView({ behavior: 'smooth' })}
           aria-label="Book Now"
-          className="relative flex w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-[#D4AF37] to-[#AA7700] rounded-full items-center justify-center text-black shadow-[0_8px_30px_rgba(212,175,55,0.4)] hover:scale-110 transition-transform duration-300 group"
+          className="btn-shimmer shiny-hover relative flex w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-[#D4AF37] to-[#AA7700] rounded-full items-center justify-center text-black shadow-[0_8px_30px_rgba(212,175,55,0.5)] hover:scale-110 transition-transform duration-300 group cursor-pointer"
         >
-          <CalendarCheck className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.8} />
+          <CalendarCheck className="w-5 h-5 md:w-6 md:h-6 relative z-10" strokeWidth={1.8} />
           {/* Tooltip */}
-          <span className="absolute right-full mr-3 bg-[#D4AF37] text-black font-sans font-semibold text-[10px] tracking-wider uppercase px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-lg">
+          <span className="absolute right-full mr-3 bg-[#D4AF37] text-black font-sans font-semibold text-[10px] tracking-wider uppercase px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-lg z-20">
             Đặt lịch
           </span>
         </button>
